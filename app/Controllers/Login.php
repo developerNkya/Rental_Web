@@ -10,10 +10,10 @@ class Login extends BaseController
     public function login()
     {
         try {
-            $username = $this->request->getPost('phone_number');
+            $phone = $this->request->getPost('phone_number');
             $password = $this->request->getPost('password');
     
-            if (empty($username) || empty($password)) {
+            if (empty($phone) || empty($password)) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'Phone number and password are required.',
@@ -21,12 +21,14 @@ class Login extends BaseController
             }
     
             $userModel = new User();
-            $user = $userModel->where('phone_number', $username)->first();
+            $user = $userModel->where('phone_number', $phone)->first();
     
             if ($user && password_verify($password, $user['password'])) {
                 return $this->response->setJSON([
                     'success' => true,
                     'role'    => $user['role_id'],
+                    'id' => $user['id'],
+                    'phone_number' => $phone
                 ]);
             }
     
