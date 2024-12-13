@@ -26,10 +26,12 @@ class Login extends BaseController
             if ($user && password_verify($password, $user['password'])) {
                 return $this->response->setJSON([
                     'success' => true,
-                    'role'    => $user['role_id'],
-                    'id' => $user['id'],
-                    'phone_number' => $phone
-                ]);
+                    'data' => [
+                        'role' => $user['role_id'],
+                        'id' => $user['id'],
+                        'phone_number' => $phone
+                    ]
+                ]);                
             }
     
             return $this->response->setJSON([
