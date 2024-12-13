@@ -49,7 +49,7 @@ class OwnerController extends BaseController
                 'first_name' => $firstName,
                 'middle_name' => $secondName,
                 'last_name' => $lastName,
-                'username' => generate_username_by_role($role_id),
+                'username' => $phoneNumber, //generate_username_by_role($role_id),
                 'password' => password_hash('owner', PASSWORD_DEFAULT),
                 'phone_number' => $phoneNumber,
                 'role_id' => $role_id,
