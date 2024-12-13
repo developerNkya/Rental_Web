@@ -14,5 +14,10 @@ use App\Controllers\AdminSeederController;
 $routes->get('/', 'Home::index');
 
 $routes->post('/login', [Login::class, 'login']);
+
 $routes->post('/add-owner', [OwnerController::class, 'addOwner']);
+$routes->get('/fetch-owners', [OwnerController::class, 'fetchOwners']);
+
+
 $routes->get('/initialize-admin', [AdminSeederController::class,'initializeAdmin']);
+
