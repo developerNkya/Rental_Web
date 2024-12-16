@@ -210,6 +210,40 @@ class OwnerController extends BaseController
         }
     }
     
+    public function fetchTenants()
+    {
+        try {
+            $tenantModel = new Tenant();
+            $page = $this->request->getVar('page') ?? 1;
+            $owner_id = $this->request->getVar('owner_id');
+            $perPage = 5;
+
+
+            $tenants = $tenantModel->where('owner_id', $owner_id)->paginate($perPage, 'default', $page);
+            $pager = $tenantModel->pager;
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Owners fetched successfully.',
+                'data' => $tenants,
+                'pagination' => [
+                    'currentPage' => $pager->getCurrentPage(),
+                    'totalPages' => $pager->getPageCount(),
+                    'perPage' => $pager->getPerPage(),
+                    'totalItems' => $pager->getTotal(),
+                ],
+            ]);
+
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An internal server error occurred.',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
 
     public function fetchOwners()
     {
