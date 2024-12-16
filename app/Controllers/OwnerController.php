@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Models\Collection;
+use App\Models\Tenant;
 use App\Models\User;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -57,6 +58,94 @@ class OwnerController extends BaseController
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'User added successfully!',
+            ]);
+
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An internal server error occurred.',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function addTenant()
+    {
+        $firstName = $this->request->getPost('first_name');
+        $secondName = $this->request->getPost('second_name');
+        $lastName = $this->request->getPost('last_name');
+        $phoneNumber = $this->request->getPost('phone_number');
+        $rental_months = $this->request->getPost('rental_months');
+        $rental_price = $this->request->getPost('rental_price');
+        $owner_id = $this->request->getPost('owner_id');
+        $collection_id = $this->request->getPost('collection_id');
+
+        try {
+            if (empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($secondName) || empty($rental_months)|| empty($rental_price)
+            || empty($owner_id) || empty($collection_id)
+            ) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Kindly fill all fields!',
+                ]);
+            }
+
+
+            if (strlen($phoneNumber) < 10 || strlen($phoneNumber) > 10) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Kindly enter a valid 10-digit phone number.',
+                ]);
+            }
+
+            $userModel = new User();
+            $existingUser = $userModel->where('phone_number', $phoneNumber)->first();
+            $tenantModel = new Tenant();
+            $existingTenant = $tenantModel->where('phone_number', $phoneNumber)->first();
+
+            if ($existingUser || $existingTenant) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'This phone number is already registered.',
+                ]);
+            }
+
+            helper('user');
+            $role_id = 3;
+            $userModel->insert([
+                'first_name' => $firstName,
+                'middle_name' => $secondName,
+                'last_name' => $lastName,
+                'username' => $phoneNumber, //generate_username_by_role($role_id),
+                'password' => password_hash('tenant', PASSWORD_DEFAULT),
+                'phone_number' => $phoneNumber,
+                'role_id' => $role_id,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
+
+            $tenantModel->insert([
+                'first_name' => $firstName,
+                'middle_name' => $secondName,
+                'last_name' => $lastName,
+                'username' => $phoneNumber, //generate_username_by_role($role_id),
+                'password' => password_hash('tenant', PASSWORD_DEFAULT),
+                'phone_number' => $phoneNumber,
+                'role_id' => $role_id,
+                'rental_months' => $rental_months,
+                'rental_price' => $rental_price,
+                'owner_id'=>$owner_id,
+                'collection_id'=> $collection_id,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+
 
             return $this->response->setJSON([
                 'success' => true,
