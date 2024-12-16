@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\Collection;
 use App\Models\User;
 use CodeIgniter\HTTP\ResponseInterface;
 
@@ -72,6 +73,55 @@ class OwnerController extends BaseController
         }
     }
 
+    
+    public function addCollection()
+    {
+        $name = $this->request->getPost('name');
+        $location = $this->request->getPost('location');
+        $owner_id = $this->request->getPost('owner_id');
+    
+        try {
+            if (empty($name) || empty($location) || empty($owner_id)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Kindly fill all fields!',
+                ]);
+            }
+
+            $collection = new Collection();    
+            $existingCollection = $collection
+                ->where('name', $name)
+                ->where('owner_id', $owner_id)
+                ->first();
+    
+            if ($existingCollection) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'A collection with the same name already exists for this owner.',
+                ]);
+            }
+
+            $collection->insert([
+                'name' => $name,
+                'location' => $location,
+                'owner_id' => $owner_id,
+            ]);
+    
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Collection added successfully!',
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An internal server error occurred.',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+    
+
     public function fetchOwners()
     {
         try {
@@ -82,6 +132,40 @@ class OwnerController extends BaseController
 
             $owners = $userModel->where('role_id', 2)->paginate($perPage, 'default', $page);
             $pager = $userModel->pager;
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Owners fetched successfully.',
+                'data' => $owners,
+                'pagination' => [
+                    'currentPage' => $pager->getCurrentPage(),
+                    'totalPages' => $pager->getPageCount(),
+                    'perPage' => $pager->getPerPage(),
+                    'totalItems' => $pager->getTotal(),
+                ],
+            ]);
+
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An internal server error occurred.',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function fetchCollection()
+    {
+        try {
+            $collectionModel = new Collection();
+            $page = $this->request->getVar('page') ?? 1;
+            $owner_id = $this->request->getVar('owner_id');
+            $perPage = 5;
+
+
+            $owners = $collectionModel->where('owner_id', $owner_id)->paginate($perPage, 'default', $page);
+            $pager = $collectionModel->pager;
 
             return $this->response->setJSON([
                 'success' => true,
