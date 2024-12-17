@@ -282,26 +282,34 @@ class OwnerController extends BaseController
     {
         try {
             $collectionModel = new Collection();
+            $all = $this->request->getVar('all') ?? false;
             $page = $this->request->getVar('page') ?? 1;
             $owner_id = $this->request->getVar('owner_id');
             $perPage = 5;
-
-
-            $owners = $collectionModel->where('owner_id', $owner_id)->paginate($perPage, 'default', $page);
-            $pager = $collectionModel->pager;
-
+            $collections = [];
+            $pager = '';
+    
+            if ($all == false) {
+                $collections = $collectionModel->where('owner_id', $owner_id)
+                    ->paginate($perPage, 'default', $page);
+                $pager = $collectionModel->pager;
+            } else {
+                $collections = $collectionModel->select('id, name')
+                    ->where('owner_id', $owner_id)
+                    ->findAll();
+            }
+    
             return $this->response->setJSON([
                 'success' => true,
                 'message' => 'Owners fetched successfully.',
-                'data' => $owners,
-                'pagination' => [
+                'data' => $collections,
+                'pagination' => ($all == false) ? [
                     'currentPage' => $pager->getCurrentPage(),
                     'totalPages' => $pager->getPageCount(),
                     'perPage' => $pager->getPerPage(),
                     'totalItems' => $pager->getTotal(),
-                ],
+                ] : null,
             ]);
-
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
             return $this->response->setJSON([
@@ -311,5 +319,6 @@ class OwnerController extends BaseController
             ]);
         }
     }
+    
 
 }
