@@ -81,13 +81,14 @@ class OwnerController extends BaseController
         $lastName = $this->request->getPost('last_name');
         $phoneNumber = $this->request->getPost('phone_number');
         $rental_months = $this->request->getPost('rental_months');
+        $rent_deadline = $this->request->getPost('rent_deadline');
         $rental_price = $this->request->getPost('rental_price');
         $owner_id = $this->request->getPost('owner_id');
         $collection_id = $this->request->getPost('collection_id');
 
         try {
             if (empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($secondName) || empty($rental_months)|| empty($rental_price)
-            || empty($owner_id) || empty($collection_id)
+            || empty($owner_id) || empty($collection_id)  || empty($rent_deadline)
             ) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -139,6 +140,7 @@ class OwnerController extends BaseController
                 'phone_number' => $phoneNumber,
                 'role_id' => $role_id,
                 'rental_months' => $rental_months,
+                'rent_deadline' => $rent_deadline,
                 'rental_price' => $rental_price,
                 'owner_id'=>$owner_id,
                 'collection_id'=> $collection_id,
