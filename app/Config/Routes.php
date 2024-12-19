@@ -1,6 +1,7 @@
 <?php
 
 use App\Controllers\ElectricityController;
+use App\Controllers\LanguageController;
 use App\Controllers\OwnerController;
 use CodeIgniter\Router\RouteCollection;
 use App\Controllers\Login;
@@ -26,4 +27,7 @@ $routes->get('/fetch-tenants', [OwnerController::class, 'fetchTenants']);
 
 $routes->post('/update-electricity', [ElectricityController::class, 'updateElectricity']);
 $routes->get('/initialize-admin', [AdminSeederController::class,'initializeAdmin']);
+
+
+$routes->post('/update-user-language', [LanguageController::class, 'updateUserLanguage']);
 

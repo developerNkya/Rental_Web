@@ -29,6 +29,7 @@ class Login extends BaseController
                     'data' => [
                         'role' => $user['role_id'],
                         'id' => $user['id'],
+                        'language' => $user['language_id']?? 'N/A',
                         'phone_number' => $phone
                     ]
                 ]);                

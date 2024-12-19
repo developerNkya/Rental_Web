@@ -9,7 +9,7 @@ class User extends Model
     protected $table = 'users';
     protected $primaryKey = 'id';
     protected $allowedFields = ['first_name', 'middle_name', 'last_name', 'phone_number', 'role_id', 'username', 'password',
-'electricity_units_from','electricity_units_to'
+    'language_id'
 ];
     protected $returnType = 'array';
 }
