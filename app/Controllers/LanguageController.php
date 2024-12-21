@@ -38,7 +38,7 @@ class LanguageController extends BaseController
 
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'Lnaguage Updated Successfully!',
+                'message' => 'Language Updated Successfully!',
             ]);
 
         } catch (\Throwable $e) {
