@@ -10,12 +10,6 @@ class AddNotificationuserIdToTenant extends Migration
     {
         // Add columns to tenants table
         $fields = [
-            'user_id' => [
-                'type'       => 'INT',
-                'unsigned'   => true,
-                'null'       => false,
-                'after'      => 'id',
-            ],
             'notified_at' => [
                 'type'       => 'DATE',
                 'null'       => true,
@@ -24,7 +18,6 @@ class AddNotificationuserIdToTenant extends Migration
         ];
 
         $this->forge->addColumn('tenants', $fields);
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
 
         $this->db->query('CREATE INDEX idx_rent_deadline ON tenants (rent_deadline)');
         $this->db->query('CREATE INDEX idx_notified_at ON tenants (notified_at)');
