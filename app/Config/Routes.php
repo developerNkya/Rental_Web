@@ -2,6 +2,7 @@
 
 use App\Controllers\ElectricityController;
 use App\Controllers\LanguageController;
+use App\Controllers\NotificationController;
 use App\Controllers\OwnerController;
 use CodeIgniter\Router\RouteCollection;
 use App\Controllers\Login;
@@ -31,3 +32,5 @@ $routes->get('/initialize-admin', [AdminSeederController::class,'initializeAdmin
 
 $routes->post('/update-user-language', [LanguageController::class, 'updateUserLanguage']);
 
+
+$routes->get('sendRentNotifications', [NotificationController::class, 'sendRentNotifications']);
