@@ -10,3 +10,13 @@ class Redis extends BaseConfig
     public $password = null;
     public $database = 0;
 }
+
+
+//start:
+//php spark sendRentNotifications
+//php spark process:notifications
+
+// for reddis:
+//start - redis-server
+//for cli - redis-cli
+//check for notification: LRANGE notification_queue 0 -1

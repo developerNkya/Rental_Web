@@ -10,12 +10,13 @@ class NotificationModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = ['tenant_id', 'message', 'status'];
 
-    public function addToQueue($tenant_id, $message)
+    public function addToQueue($tenant_id,$tenant_phone, $message)
     {
         $redis = get_redis();
         
         $job = json_encode([
             'tenant_id' => $tenant_id,
+            'tenant_phone' => $tenant_phone,
             'message'   => $message,
         ]);
     
