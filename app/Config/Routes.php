@@ -25,6 +25,7 @@ $routes->get('/fetch-collection', [OwnerController::class, 'fetchCollection']);
 
 $routes->post('/add-tenant', [OwnerController::class, 'addTenant']);
 $routes->get('/fetch-tenants', [OwnerController::class, 'fetchTenants']);
+$routes->get('/owner-summary', [OwnerController::class, 'OwnerSummary']);
 
 $routes->post('/update-electricity', [ElectricityController::class, 'updateElectricity']);
 $routes->get('/initialize-admin', [AdminSeederController::class,'initializeAdmin']);

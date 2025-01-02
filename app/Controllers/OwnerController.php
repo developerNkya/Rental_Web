@@ -246,6 +246,55 @@ class OwnerController extends BaseController
         }
     }
 
+    
+    public function ownerSummary()
+    {
+
+        try {
+            $owner_id = $this->request->getVar('owner_id');
+    
+            if (!$owner_id) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Owner ID is required.',
+                ]);
+            }
+    
+            $tenant = new Tenant();
+            
+            $total_tenants = count($tenant->where('owner_id', $owner_id)->findAll());
+    
+
+            $monthly_tenants = count($tenant
+                ->where('owner_id', $owner_id)
+                ->where('rent_deadline >=', date('Y-m-01'))
+                ->where('rent_deadline <=', date('Y-m-t'))
+                ->findAll());
+    
+            $collectionModel = new Collection();
+            $collections = count($collectionModel->where('owner_id', $owner_id)->findAll());
+
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Owners Summary fetched successfully.',
+                'data' => [
+                    'total_tenants' => $total_tenants,
+                    'monthly_tenants' => $monthly_tenants,
+                    'collections' => $collections,
+                ],
+            ]);
+    
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An internal server error occurred.',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+    
+    
 
     public function fetchOwners()
     {
