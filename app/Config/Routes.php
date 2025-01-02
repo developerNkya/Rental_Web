@@ -35,3 +35,6 @@ $routes->post('/update-user-language', [LanguageController::class, 'updateUserLa
 
 
 $routes->get('sendRentNotifications', [NotificationController::class, 'sendRentNotifications']);
+
+
+$routes->get('/owner-profile', [OwnerController::class, 'ownerProfile']);

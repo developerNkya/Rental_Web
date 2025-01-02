@@ -7,6 +7,7 @@ use App\Models\Collection;
 use App\Models\Tenant;
 use App\Models\User;
 use CodeIgniter\HTTP\ResponseInterface;
+use DateTime;
 
 class OwnerController extends BaseController
 {
@@ -245,8 +246,54 @@ class OwnerController extends BaseController
             ]);
         }
     }
+  
+    public function ownerProfile()
+    {
+        try {
+            $owner_id = $this->request->getVar('owner_id');
+            $user = new User();
+            $owner = $user 
+                     ->where('id',$owner_id)
+                     ->first();
 
-    
+            $cycle_day = $owner['cycle_tracker'];
+            $today = new DateTime();
+            $next_payment_date = new DateTime();
+
+            $next_payment_date->setDate(
+                $today->format('Y'),
+                $today->format('m') + ($today->format('d') < $cycle_day ? 0 : 1),
+                $cycle_day
+            );
+            
+
+            if ($next_payment_date->format('d') != $cycle_day) {
+                $next_payment_date->modify('last day of this month');
+            }
+
+            $tenantCount = (new Tenant())->where('owner_id', $owner_id)->countAllResults();
+            $next_payment_amount = number_format($tenantCount * 500);
+                     return $this->response->setJSON([
+                        'success' => true,
+                        'data' => [
+                            'Fullname' => implode(' ', array_filter([$owner['first_name'], $owner['middle_name'], $owner['last_name']])),
+                            'status' =>$owner['status'],
+                            'next_payment_date' => $next_payment_date->format('Y-m-d'),
+                            'next_payment_amount' => $next_payment_amount,
+                            'deficity' => number_format($owner['deficity']) ?? 0
+
+                        ],
+                    ]);
+
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An internal server error occurred.',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
     public function ownerSummary()
     {
 
@@ -261,7 +308,7 @@ class OwnerController extends BaseController
             }
     
             $tenant = new Tenant();
-            
+
             $total_tenants = count($tenant->where('owner_id', $owner_id)->findAll());
     
 
