@@ -88,37 +88,38 @@ class OwnerController extends BaseController
         $collection_id = $this->request->getPost('collection_id');
 
         try {
-            if (empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($secondName) || empty($rental_months)|| empty($rental_price)
-            || empty($owner_id) || empty($collection_id)  || empty($rent_deadline)
+            if (empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($secondName) || empty($rental_months) || empty($rental_price)
+                || empty($owner_id) || empty($collection_id) || empty($rent_deadline)
             ) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'Kindly fill all fields!',
                 ]);
             }
-
-
+        
             if (strlen($phoneNumber) < 10 || strlen($phoneNumber) > 10) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'Kindly enter a valid 10-digit phone number.',
                 ]);
             }
-
+        
             $userModel = new User();
             $existingUser = $userModel->where('phone_number', $phoneNumber)->first();
             $tenantModel = new Tenant();
             $existingTenant = $tenantModel->where('phone_number', $phoneNumber)->first();
-
+        
             if ($existingUser || $existingTenant) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'This phone number is already registered.',
                 ]);
             }
-
+        
             helper('user');
             $role_id = 3;
+    
+            
             $userModel->insert([
                 'first_name' => $firstName,
                 'middle_name' => $secondName,
@@ -130,7 +131,8 @@ class OwnerController extends BaseController
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
-
+        
+            $userId = $userModel->insertID();
 
             $tenantModel->insert([
                 'first_name' => $firstName,
@@ -138,24 +140,29 @@ class OwnerController extends BaseController
                 'last_name' => $lastName,
                 'username' => $phoneNumber, //generate_username_by_role($role_id),
                 'password' => password_hash('tenant', PASSWORD_DEFAULT),
+                'user_id' => $userId,
                 'phone_number' => $phoneNumber,
                 'role_id' => $role_id,
                 'rental_months' => $rental_months,
                 'rent_deadline' => $rent_deadline,
                 'rental_price' => $rental_price,
-                'owner_id'=>$owner_id,
-                'collection_id'=> $collection_id,
+                'owner_id' => $owner_id,
+                'collection_id' => $collection_id,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
-
-
+        
             return $this->response->setJSON([
                 'success' => true,
                 'message' => 'User added successfully!',
             ]);
-
-        } catch (\Throwable $e) {
+        
+        } catch (\Exception $e) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An error occurred: ' . $e->getMessage(),
+            ]);
+        }  catch (\Throwable $e) {
             log_message('error', $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
