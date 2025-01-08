@@ -75,94 +75,131 @@ class OwnerController extends BaseController
         }
     }
 
+
     public function addTenant()
     {
         $firstName = $this->request->getPost('first_name');
         $secondName = $this->request->getPost('second_name');
         $lastName = $this->request->getPost('last_name');
         $phoneNumber = $this->request->getPost('phone_number');
-        $rental_months = $this->request->getPost('rental_months');
-        $rent_deadline = $this->request->getPost('rent_deadline');
-        $rental_price = $this->request->getPost('rental_price');
-        $owner_id = $this->request->getPost('owner_id');
-        $collection_id = $this->request->getPost('collection_id');
-
+        $rentalMonths = $this->request->getPost('rental_months');
+        $rentDeadline = $this->request->getPost('rent_deadline');
+        $rentalPrice = $this->request->getPost('rental_price');
+        $ownerId = $this->request->getPost('owner_id');
+        $collectionId = $this->request->getPost('collection_id');
+        $rentContract = $this->request->getFile('rent_contract');
+        
         try {
-            if (empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($secondName) || empty($rental_months) || empty($rental_price)
-                || empty($owner_id) || empty($collection_id) || empty($rent_deadline)
+            // Step 1: Validate required fields
+            if (
+                empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($secondName) ||
+                empty($rentalMonths) || empty($rentalPrice) || empty($ownerId) || empty($collectionId) ||
+                empty($rentDeadline)
             ) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'Kindly fill all fields!',
                 ]);
             }
-        
-            if (strlen($phoneNumber) < 10 || strlen($phoneNumber) > 10) {
+    
+            // Step 2: Validate phone number
+            if (strlen($phoneNumber) !== 10) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'Kindly enter a valid 10-digit phone number.',
                 ]);
             }
-        
+    
+            // Step 3: Check for existing user or tenant with the same phone number
             $userModel = new User();
-            $existingUser = $userModel->where('phone_number', $phoneNumber)->first();
             $tenantModel = new Tenant();
+    
+            $existingUser = $userModel->where('phone_number', $phoneNumber)->first();
             $existingTenant = $tenantModel->where('phone_number', $phoneNumber)->first();
-        
+    
             if ($existingUser || $existingTenant) {
                 return $this->response->setJSON([
                     'success' => false,
                     'message' => 'This phone number is already registered.',
                 ]);
             }
-        
-            helper('user');
-            $role_id = 3;
     
-            
+            // Step 4: Handle file upload (optional field)
+            $rentContractPath = null;
+            if ($rentContract && $rentContract->isValid() && !$rentContract->hasMoved()) {
+                // Validate file type and size
+                if (!in_array($rentContract->getMimeType(), ['application/pdf', 'image/jpeg', 'image/png'])) {
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'Invalid file type. Only PDF, JPEG, and PNG are allowed.',
+                    ]);
+                }
+                if ($rentContract->getSize() > 2 * 1024 * 1024) { // Limit file size to 2MB
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'File size exceeds the 2MB limit.',
+                    ]);
+                }
+    
+                // Save the file to a secure path
+                $uploadPath = WRITEPATH . 'uploads/rent_contracts/';
+                $rentContract->move($uploadPath);
+                $rentContractPath = 'uploads/rent_contracts/' . $rentContract->getName(); // Relative path
+            }
+    
+            // Step 5: Insert user data
+            helper('user');
+            $roleId = 3; // Tenant role ID
+    
             $userModel->insert([
                 'first_name' => $firstName,
                 'middle_name' => $secondName,
                 'last_name' => $lastName,
-                'username' => $phoneNumber, //generate_username_by_role($role_id),
-                'password' => password_hash('tenant', PASSWORD_DEFAULT),
+                'username' => $phoneNumber,
+                'password' => password_hash('tenant', PASSWORD_DEFAULT), // Default password
                 'phone_number' => $phoneNumber,
-                'role_id' => $role_id,
+                'role_id' => $roleId,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
-        
+    
             $userId = $userModel->insertID();
-
+    
+            // Step 6: Insert tenant data
             $tenantModel->insert([
                 'first_name' => $firstName,
                 'middle_name' => $secondName,
                 'last_name' => $lastName,
-                'username' => $phoneNumber, //generate_username_by_role($role_id),
-                'password' => password_hash('tenant', PASSWORD_DEFAULT),
+                'username' => $phoneNumber,
+                'password' => password_hash('tenant', PASSWORD_DEFAULT), // Default password
                 'user_id' => $userId,
                 'phone_number' => $phoneNumber,
-                'role_id' => $role_id,
-                'rental_months' => $rental_months,
-                'rent_deadline' => $rent_deadline,
-                'rental_price' => $rental_price,
-                'owner_id' => $owner_id,
-                'collection_id' => $collection_id,
+                'role_id' => $roleId,
+                'rental_months' => $rentalMonths,
+                'rent_deadline' => $rentDeadline,
+                'rental_price' => $rentalPrice,
+                'owner_id' => $ownerId,
+                'collection_id' => $collectionId,
+                'rent_contract' => $rentContractPath, // Save relative path
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
-        
+    
+            // Step 7: Return success response
             return $this->response->setJSON([
                 'success' => true,
-                'message' => 'User added successfully!',
+                'message' => 'Tenant added successfully!',
             ]);
-        
+    
         } catch (\Exception $e) {
+            // Log the exception
+            log_message('error', $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage(),
             ]);
-        }  catch (\Throwable $e) {
+        } catch (\Throwable $e) {
+            // Log the throwable error
             log_message('error', $e->getMessage());
             return $this->response->setJSON([
                 'success' => false,
@@ -171,6 +208,8 @@ class OwnerController extends BaseController
             ]);
         }
     }
+    
+
 
     
     public function addCollection()
