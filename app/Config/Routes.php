@@ -22,6 +22,7 @@ $routes->post('/add-owner', [OwnerController::class, 'addOwner']);
 $routes->get('/fetch-owners', [OwnerController::class, 'fetchOwners']);
 
 $routes->get('/fetch-tenant-details', [TenantController::class, 'fetchTenant']);
+$routes->get('/fetch-tenant-contract', [TenantController::class, 'fetchTenantContract']);
 
 $routes->post('/add-collection', [OwnerController::class, 'addCollection']);
 $routes->get('/fetch-collection', [OwnerController::class, 'fetchCollection']);

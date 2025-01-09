@@ -87,8 +87,7 @@ class OwnerController extends BaseController
         $rentalPrice = $this->request->getPost('rental_price');
         $ownerId = $this->request->getPost('owner_id');
         $collectionId = $this->request->getPost('collection_id');
-        $rentContract = $this->request->getFile('rent_contract');
-        
+    
         try {
             // Step 1: Validate required fields
             if (
@@ -124,27 +123,32 @@ class OwnerController extends BaseController
                 ]);
             }
     
-            // Step 4: Handle file upload (optional field)
+            // Step 4: Handle file upload
             $rentContractPath = null;
+            $rentContract = $this->request->getFile('rent_contract');
             if ($rentContract && $rentContract->isValid() && !$rentContract->hasMoved()) {
-                // Validate file type and size
-                if (!in_array($rentContract->getMimeType(), ['application/pdf', 'image/jpeg', 'image/png'])) {
+                $validMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+                if (!in_array($rentContract->getMimeType(), $validMimeTypes)) {
                     return $this->response->setJSON([
                         'success' => false,
                         'message' => 'Invalid file type. Only PDF, JPEG, and PNG are allowed.',
                     ]);
                 }
-                if ($rentContract->getSize() > 2 * 1024 * 1024) { // Limit file size to 2MB
+                if ($rentContract->getSize() > 2 * 1024 * 1024) { // 2MB limit
                     return $this->response->setJSON([
                         'success' => false,
                         'message' => 'File size exceeds the 2MB limit.',
                     ]);
                 }
     
-                // Save the file to a secure path
-                $uploadPath = WRITEPATH . 'uploads/rent_contracts/';
-                $rentContract->move($uploadPath);
-                $rentContractPath = 'uploads/rent_contracts/' . $rentContract->getName(); // Relative path
+                $uploadPath = WRITEPATH . 'uploads/rent_contracts/'; // Save in writeable directory
+                if (!is_dir($uploadPath)) {
+                    mkdir($uploadPath, 0777, true); // Create directory if it doesn't exist
+                }
+    
+                $newName = $rentContract->getRandomName();
+                $rentContract->move($uploadPath, $newName);
+                $rentContractPath = 'uploads/rent_contracts/' . $newName; // Relative path
             }
     
             // Step 5: Insert user data
@@ -208,6 +212,8 @@ class OwnerController extends BaseController
             ]);
         }
     }
+    
+    
     
 
 
