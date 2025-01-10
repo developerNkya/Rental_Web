@@ -42,3 +42,6 @@ $routes->get('sendRentNotifications', [NotificationController::class, 'sendRentN
 
 
 $routes->get('/owner-profile', [OwnerController::class, 'ownerProfile']);
+
+$routes->get('/delete_item/(:num)/type/(:segment)', [OwnerController::class, 'deleteItem']);
+

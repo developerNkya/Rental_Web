@@ -87,13 +87,14 @@ class OwnerController extends BaseController
         $rentalPrice = $this->request->getPost('rental_price');
         $ownerId = $this->request->getPost('owner_id');
         $collectionId = $this->request->getPost('collection_id');
+        $rentContract = $this->request->getFile('rent_contract');
     
         try {
             // Step 1: Validate required fields
             if (
                 empty($firstName) || empty($lastName) || empty($phoneNumber) || empty($secondName) ||
                 empty($rentalMonths) || empty($rentalPrice) || empty($ownerId) || empty($collectionId) ||
-                empty($rentDeadline)
+                empty($rentDeadline) || empty($rentContract)
             ) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -125,7 +126,6 @@ class OwnerController extends BaseController
     
             // Step 4: Handle file upload
             $rentContractPath = null;
-            $rentContract = $this->request->getFile('rent_contract');
             if ($rentContract && $rentContract->isValid() && !$rentContract->hasMoved()) {
                 $validMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
                 if (!in_array($rentContract->getMimeType(), $validMimeTypes)) {
@@ -346,6 +346,59 @@ class OwnerController extends BaseController
             ]);
         }
     }
+
+    public function deleteItem($id = null, $type = null)
+    {
+        try {
+            // Validate input
+            if (empty($id) || empty($type)) {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Invalid parameters provided.',
+                ]);
+            }
+    
+            // Perform deletion based on the type
+            switch ($type) {
+                case 'tenants':
+                    $tenant = new Tenant();
+                    $deleted = $tenant->where('user_id', $id)->delete();
+                    break;
+    
+                case 'collections':
+                    $collection = new Collection();
+                    $deleted = $collection->where('id', $id)->delete();
+                    break;
+    
+                default:
+                    return $this->response->setJSON([
+                        'success' => false,
+                        'message' => 'Invalid deletion type provided.',
+                    ]);
+            }
+    
+            if ($deleted) {
+                return $this->response->setJSON([
+                    'success' => true,
+                    'message' => ucfirst($type) . ' successfully deleted.',
+                ]);
+            } else {
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => ucfirst($type) . ' could not be deleted or does not exist.',
+                ]);
+            }
+        } catch (\Throwable $e) {
+            log_message('error', $e->getMessage());
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'An internal server error occurred.',
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+    
+    
     public function ownerSummary()
     {
 
