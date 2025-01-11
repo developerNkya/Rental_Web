@@ -352,7 +352,6 @@ class OwnerController extends BaseController
     public function deleteItem($id = null, $type = null)
     {
         try {
-            // Validate input
             if (empty($id) || empty($type)) {
                 return $this->response->setJSON([
                     'success' => false,
@@ -360,16 +359,19 @@ class OwnerController extends BaseController
                 ]);
             }
     
-            // Perform deletion based on the type
+            $deleted = false;
+    
             switch ($type) {
                 case 'tenants':
-                    $tenant = new Tenant();
-                    $deleted = $tenant->where('user_id', $id)->delete();
+                    $tenant = (new Tenant())->find($id);
+                    if ($tenant) {
+                        $user_id = $tenant['user_id'];
+                        $deleted = (new Tenant())->delete($id) && (new User())->delete($user_id);
+                    }
                     break;
     
                 case 'collections':
-                    $collection = new Collection();
-                    $deleted = $collection->where('id', $id)->delete();
+                    $deleted = (new Collection())->delete($id);
                     break;
     
                 default:
@@ -379,17 +381,12 @@ class OwnerController extends BaseController
                     ]);
             }
     
-            if ($deleted) {
-                return $this->response->setJSON([
-                    'success' => true,
-                    'message' => ucfirst($type) . ' successfully deleted.',
-                ]);
-            } else {
-                return $this->response->setJSON([
-                    'success' => false,
-                    'message' => ucfirst($type) . ' could not be deleted or does not exist.',
-                ]);
-            }
+            return $this->response->setJSON([
+                'success' => $deleted,
+                'message' => $deleted
+                    ? ucfirst($type) . ' successfully deleted.'
+                    : ucfirst($type) . ' could not be deleted or does not exist.',
+            ]);
         } catch (\Throwable $e) {
             log_message('error', $e->getMessage());
             return $this->response->setJSON([
@@ -399,6 +396,7 @@ class OwnerController extends BaseController
             ]);
         }
     }
+    
     
     
     public function ownerSummary()
