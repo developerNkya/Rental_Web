@@ -59,6 +59,7 @@ class InitialAdminSeeder extends Seeder
                 $userModel->insert([
                     'first_name'   => 'Admin',
                     'middle_name'  => 'System',
+                    'status'  => 'Active',
                     'last_name'    => 'Administrator',
                     'password'     => password_hash('admin', PASSWORD_DEFAULT), // Hashed password
                     'phone_number' => '1234567890',
