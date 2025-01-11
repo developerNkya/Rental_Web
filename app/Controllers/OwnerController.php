@@ -56,6 +56,7 @@ class OwnerController extends BaseController
                 'password' => password_hash('owner', PASSWORD_DEFAULT),
                 'phone_number' => $phoneNumber,
                 'role_id' => $role_id,
+                'status' =>'Active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
@@ -163,6 +164,7 @@ class OwnerController extends BaseController
                 'password' => password_hash('tenant', PASSWORD_DEFAULT), // Default password
                 'phone_number' => $phoneNumber,
                 'role_id' => $roleId,
+                'status' =>'Active',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s'),
             ]);
