@@ -22,6 +22,13 @@ class Login extends BaseController
     
             $userModel = new User();
             $user = $userModel->where('phone_number', $phone)->first();
+
+            if($user['status'] !='Active'){
+                return $this->response->setJSON([
+                    'success' => false,
+                    'message' => 'Sorry,User account has been deactivated!',
+                ]);
+            }
     
             if ($user && password_verify($password, $user['password'])) {
                 return $this->response->setJSON([
