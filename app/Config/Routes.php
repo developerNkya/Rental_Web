@@ -40,7 +40,7 @@ $routes->post('/update-user-language', [LanguageController::class, 'updateUserLa
 
 $routes->get('sendRentNotifications', [NotificationController::class, 'sendRentNotifications']);
 
-$routes->get('/triggerNotifications', [NotificationController::class, 'trigerRentNotifications']);
+$routes->get('/triggerNotifications', [NotificationController::class, 'triggerRentNotifications']);
 
 
 $routes->get('/owner-profile', [OwnerController::class, 'ownerProfile']);
