@@ -6,6 +6,7 @@ use App\Models\Tenant;
 use App\Models\TenantModel;
 use App\Models\NotificationModel;
 use App\Models\User;
+use App\Constants;
 
 class NotificationController extends BaseController
 {
