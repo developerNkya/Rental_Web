@@ -84,17 +84,29 @@ class ProcessRentNotifications extends BaseCommand
 
     private function sendSMS($phone, $message)
     {
+        $phone = preg_replace('/\D/', '', $phone);
+    
+        // If the phone number starts with 0, replace it with '255'
+        if (substr($phone, 0, 1) == '0') {
+            $phone = '255' . substr($phone, 1);
+        }
+    
+        // If the phone number does not start with '255', ensure it does
+        if (substr($phone, 0, 3) != '255') {
+            $phone = '255' . $phone; // Prepend '255' if missing
+        }
+    
         $username = Constants::NEXT_USERNAME;
         $password = Constants::NEXT_PASSWORD;
-
+    
         $postData = [
             'from' => 'SCHOOL',
             'to' => $phone,
             'text' => $message,
         ];
-
+    
         $url = 'https://messaging-service.co.tz/api/sms/v1/text/single';
-
+    
         $curl = curl_init();
         curl_setopt_array($curl, [
             CURLOPT_URL => $url,
@@ -105,14 +117,15 @@ class ProcessRentNotifications extends BaseCommand
                 'Authorization: Basic ' . base64_encode("$username:$password"),
             ],
         ]);
-
+    
         $response = curl_exec($curl);
         curl_close($curl);
-
+    
         if ($response === false) {
             CLI::write("Failed to send SMS to {$phone}.", 'red');
         } else {
             CLI::write("SMS sent successfully to {$phone}: {$response}", 'green');
         }
     }
+    
 }
